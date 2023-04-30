@@ -1,22 +1,29 @@
 package com.javadevjournal.service;
 
 import com.javadevjournal.dto.CustomerDTO;
-import com.javadevjournal.jpa.Customer;
-import com.javadevjournal.jpa.CustomerRepository;
+import com.javadevjournal.jpa.entity.Customer;
+import com.javadevjournal.jpa.repository.CustomerRepository;
+import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
+
+@AllArgsConstructor
 @Service("customerService")
 public class CustomerServiceImpl implements CustomerService {
 
+	private final ApartmentService apartmentService;
 	@Autowired
-	CustomerRepository customerRepository;
+	private CustomerRepository customerRepository;
 
 	@Override
 	public String login(String username, String password) {
@@ -30,6 +37,11 @@ public class CustomerServiceImpl implements CustomerService {
 		}
 
 		return StringUtils.EMPTY;
+	}
+
+	@Override
+	public List<Customer> findAll() {
+		return (List<Customer>) customerRepository.findAll();
 	}
 
 	@Override
@@ -60,5 +72,50 @@ public class CustomerServiceImpl implements CustomerService {
 				customerDTO.getPassword()
 		);
 		return res.orElseGet(() -> customerRepository.save(customer));
+	}
+
+	@Override
+	public Optional<Customer> whoIs(HttpServletRequest httpServletRequest) {
+		String token = StringUtils.isNotEmpty(httpServletRequest.getHeader(AUTHORIZATION)) ?
+				httpServletRequest.getHeader(AUTHORIZATION) : "";
+		token = StringUtils.removeStart(token, "Bearer").trim();
+		return customerRepository.findByToken(token);
+	}
+
+	@Override
+	public String complaint(HttpServletRequest httpServletRequest, Long customerId) {
+		var customerOpt = whoIs(httpServletRequest);
+		if (customerOpt.isEmpty()) {
+			throw new RuntimeException("Хз как так вышло, вы не авторизованы");
+		}
+		var customer = customerOpt.get();
+		if (customer.isBanned()) {
+			throw new RuntimeException("Вы забанены, вам нельзя жаловаться");
+		}
+		Customer anotherUser = findById(customerId);
+		if (anotherUser == null) {
+			throw new RuntimeException("Пользователя на которого вы жалуетесь не существует");
+		}
+		if (anotherUser.isBanned()) {
+			throw new RuntimeException("Пользователя на которого вы жалуетесь уже забанен");
+		}
+		return complaint(customer);
+	}
+
+	@Override
+	public void save(Customer customer) {
+		customerRepository.save(customer);
+	}
+
+	private String complaint(Customer customer) {
+		customer.incNegative();
+		if (customer.getKarmaNegative() >= 5) {
+			customer.setBanned(true);
+			apartmentService.deleteAllByOwner(customer);
+			apartmentService.unApprove(customer);
+			return "Пользователь успешно забанен!";
+		} else {
+			return "Жалоба успешно отправлена!";
+		}
 	}
 }

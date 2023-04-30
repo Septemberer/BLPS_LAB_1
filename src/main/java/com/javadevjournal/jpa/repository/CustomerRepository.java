@@ -1,5 +1,6 @@
-package com.javadevjournal.jpa;
+package com.javadevjournal.jpa.repository;
 
+import com.javadevjournal.jpa.entity.Customer;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;

@@ -1,8 +1,8 @@
 package com.javadevjournal.controller;
 
 import com.javadevjournal.service.CustomerService;
+import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -12,11 +12,11 @@ import javax.servlet.http.HttpServletRequest;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @RestController
+@AllArgsConstructor
 @RequestMapping("/api/apartments")
 public class ApartmentController {
 
-	@Autowired
-	private CustomerService customerService;
+	private final CustomerService customerService;
 
 	@GetMapping(value = "/whoIs")
 	public String whoIs(HttpServletRequest httpServletRequest) {
