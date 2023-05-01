@@ -1,5 +1,6 @@
 package com.javadevjournal.service;
 
+import com.javadevjournal.jpa.entity.Apartment;
 import com.javadevjournal.jpa.entity.Offer;
 import com.javadevjournal.jpa.entity.Vote;
 
@@ -8,7 +9,7 @@ import java.util.Optional;
 
 public interface VoteService {
 
-	Vote createVote();
+	Vote createVote(Apartment apartment);
 
 	List<Vote> getAllOpenedVotes();
 

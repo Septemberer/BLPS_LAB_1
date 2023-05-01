@@ -12,5 +12,6 @@ public class ApartmentDTO {
 	private Long price;
 	private Integer floor;
 	private String address;
+	private Integer rooms;
 
 }

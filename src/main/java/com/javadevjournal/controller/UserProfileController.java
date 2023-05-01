@@ -8,6 +8,7 @@ import com.javadevjournal.service.ApartmentService;
 import com.javadevjournal.service.CustomerService;
 import com.javadevjournal.service.VoteService;
 import lombok.AllArgsConstructor;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,6 +32,12 @@ public class UserProfileController {
     @GetMapping(value = "/users/user/{id}", produces = "application/json")
     public Customer getUserDetail(@PathVariable Long id) {
         return customerService.findById(id);
+    }
+
+    @DeleteMapping(value = "/users/delete/me")
+    public String deleteMe(HttpServletRequest httpServletRequest) {
+        customerService.deleteMe(httpServletRequest);
+        return "Вы и ваши квартиры успешно удалены из системы";
     }
 
     @GetMapping(value = "/users/user/all", produces = "application/json")
@@ -68,6 +75,11 @@ public class UserProfileController {
     @GetMapping(value = "/apartments/all", produces = "application/json")
     public List<Apartment> findAllApprovedApartments() {
         return apartmentService.findAllApprovedApartments();
+    }
+
+    @GetMapping(value = "/apartments/allVoting", produces = "application/json")
+    public List<Apartment> findAllUnapprovedApartments() {
+        return apartmentService.findAllUnapprovedApartments();
     }
 
 

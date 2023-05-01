@@ -1,5 +1,6 @@
 package com.javadevjournal.service;
 
+import com.javadevjournal.jpa.entity.Apartment;
 import com.javadevjournal.jpa.entity.Offer;
 import com.javadevjournal.jpa.entity.Vote;
 import com.javadevjournal.jpa.repository.VoteRepository;
@@ -18,7 +19,7 @@ public class VoteServiceImpl implements VoteService {
 	private VoteRepository voteRepository;
 
 	@Override
-	public Vote createVote() {
+	public Vote createVote(Apartment apartment) {
 		Vote vote = new Vote();
 		return voteRepository.save(vote);
 	}

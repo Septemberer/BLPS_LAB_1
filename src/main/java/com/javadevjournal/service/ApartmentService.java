@@ -16,6 +16,8 @@ public interface ApartmentService {
 
 	List<Apartment> findAllApprovedApartments();
 
+	List<Apartment> findAllUnapprovedApartments();
+
 	void deleteAllByOwner(Customer customer);
 
 	Apartment createApartment(ApartmentDTO apartmentDTO, Customer customer);

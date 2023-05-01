@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -59,12 +60,15 @@ public class CustomerServiceImpl implements CustomerService {
 	@Override
 	public Customer findById(Long id) {
 		Optional<Customer> customer = customerRepository.findById(id);
-		return customer.orElse(null);
+		return customer.orElseThrow(() -> new RuntimeException("Пользователь не найден"));
 	}
 
 	@Override
 	public Customer registration(CustomerDTO customerDTO) {
 		Customer customer = new Customer();
+		if (customerDTO.getName() == null || customerDTO.getPassword() == null) {
+			throw new RuntimeException("Вы ошиблись, отсутствует имя или пароль");
+		}
 		customer.setUserName(customerDTO.getName());
 		customer.setPassword(customerDTO.getPassword());
 		var res = customerRepository.findByUserNameAndPassword(
@@ -83,6 +87,20 @@ public class CustomerServiceImpl implements CustomerService {
 	}
 
 	@Override
+	@Transactional
+	public void deleteMe(HttpServletRequest httpServletRequest) {
+		var customerOpt = whoIs(httpServletRequest);
+		if (customerOpt.isEmpty()) {
+			throw new RuntimeException("Хз как так вышло, вы не авторизованы");
+		}
+		var customer = customerOpt.get();
+		apartmentService.deleteAllByOwner(customer);
+//		apartmentService.unApprove(customer);
+		customerRepository.delete(customer);
+	}
+
+	@Override
+	@Transactional
 	public String complaint(HttpServletRequest httpServletRequest, Long customerId) {
 		var customerOpt = whoIs(httpServletRequest);
 		if (customerOpt.isEmpty()) {
@@ -90,7 +108,7 @@ public class CustomerServiceImpl implements CustomerService {
 		}
 		var customer = customerOpt.get();
 		if (customer.isBanned()) {
-			throw new RuntimeException("Вы забанены, вам нельзя жаловаться");
+			throw new RuntimeException("Пользователя на которого вы жалуетесь уже забанен");
 		}
 		Customer anotherUser = findById(customerId);
 		if (anotherUser == null) {
@@ -99,7 +117,7 @@ public class CustomerServiceImpl implements CustomerService {
 		if (anotherUser.isBanned()) {
 			throw new RuntimeException("Пользователя на которого вы жалуетесь уже забанен");
 		}
-		return complaint(customer);
+		return complaint(anotherUser);
 	}
 
 	@Override
@@ -111,10 +129,12 @@ public class CustomerServiceImpl implements CustomerService {
 		customer.incNegative();
 		if (customer.getKarmaNegative() >= 5) {
 			customer.setBanned(true);
+			customerRepository.save(customer);
 			apartmentService.deleteAllByOwner(customer);
 			apartmentService.unApprove(customer);
 			return "Пользователь успешно забанен!";
 		} else {
+			customerRepository.save(customer);
 			return "Жалоба успешно отправлена!";
 		}
 	}

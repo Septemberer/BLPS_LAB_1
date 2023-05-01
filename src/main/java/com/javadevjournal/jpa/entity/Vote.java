@@ -11,7 +11,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
-import javax.persistence.OneToOne;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,10 +24,6 @@ public class Vote {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	@Column(name = "vote_id")
 	private Long id;
-
-	@OneToOne
-	@JoinColumn(name = "apartment_id")
-	private Apartment apartment;
 
 	@ManyToMany
 	@JoinColumn(name = "offer_ids")

@@ -22,6 +22,8 @@ public interface CustomerService {
 
 	Optional<Customer> whoIs(HttpServletRequest httpServletRequest);
 
+	void deleteMe(HttpServletRequest httpServletRequest);
+
 	String complaint(HttpServletRequest httpServletRequest, Long customerId);
 
 	void save(Customer customer);

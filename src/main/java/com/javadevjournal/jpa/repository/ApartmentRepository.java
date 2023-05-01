@@ -2,10 +2,12 @@ package com.javadevjournal.jpa.repository;
 
 import com.javadevjournal.jpa.entity.Apartment;
 import com.javadevjournal.jpa.entity.Customer;
+import com.javadevjournal.jpa.entity.Vote;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ApartmentRepository extends CrudRepository<Apartment, Long> {
@@ -19,5 +21,9 @@ public interface ApartmentRepository extends CrudRepository<Apartment, Long> {
 
 	List<Apartment> findAllByApprovedIsTrue();
 
+	List<Apartment> findAllByApprovedIsFalse();
+
 	void deleteAllByOwner(Customer customer);
+
+	Optional<Apartment> findByVote(Vote vote);
 }

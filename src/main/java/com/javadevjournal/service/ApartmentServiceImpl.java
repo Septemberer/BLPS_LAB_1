@@ -42,6 +42,11 @@ public class ApartmentServiceImpl implements ApartmentService {
 	}
 
 	@Override
+	public List<Apartment> findAllUnapprovedApartments() {
+		return apartmentRepository.findAllByApprovedIsFalse();
+	}
+
+	@Override
 	public void deleteAllByOwner(Customer customer) {
 		apartmentRepository.deleteAllByOwner(customer);
 	}
@@ -53,12 +58,13 @@ public class ApartmentServiceImpl implements ApartmentService {
 		apartment.setPrice(apartmentDTO.getPrice());
 		apartment.setFloor(apartmentDTO.getFloor());
 		apartment.setAddress(apartmentDTO.getAddress());
+		apartment.setRooms(apartmentDTO.getRooms());
 		if (customer.isProfessional()) {
 			apartment.setApproved(true);
 			customer.incPositive();
 			customerRepository.save(customer);
 		} else {
-			apartment.setVote(voteService.createVote());
+			apartment.setVote(voteService.createVote(apartment));
 		}
 		return apartmentRepository.save(apartment);
 	}
@@ -75,12 +81,16 @@ public class ApartmentServiceImpl implements ApartmentService {
 				);
 				vote.setOpened(true);
 				voteService.save(vote);
-				var apartment = vote.getApartment();
+				var apartment = getApartmentByVote(vote);
 				apartment.setApproved(false);
 				save(apartment);
 			}
 			offerService.delete(offer);
 		}
+	}
+
+	private Apartment getApartmentByVote(Vote vote) {
+		return apartmentRepository.findByVote(vote).orElseThrow(() -> new RuntimeException("Некорректное состояние БД"));
 	}
 
 	@Override
@@ -111,7 +121,7 @@ public class ApartmentServiceImpl implements ApartmentService {
 				price += offer_.getPrice();
 			}
 			price = price / list.size();
-			closeVote(vote.getApartment(), price);
+			closeVote(getApartmentByVote(vote), price);
 			vote.setOpened(false);
 		}
 		vote.setOfferList(list);
