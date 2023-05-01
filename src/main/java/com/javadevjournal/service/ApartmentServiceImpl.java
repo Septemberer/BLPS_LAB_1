@@ -7,6 +7,7 @@ import com.javadevjournal.jpa.entity.Offer;
 import com.javadevjournal.jpa.entity.Vote;
 import com.javadevjournal.jpa.repository.ApartmentRepository;
 import com.javadevjournal.jpa.repository.CustomerRepository;
+import com.javadevjournal.security.MyResourceNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -90,7 +91,7 @@ public class ApartmentServiceImpl implements ApartmentService {
 	}
 
 	private Apartment getApartmentByVote(Vote vote) {
-		return apartmentRepository.findByVote(vote).orElseThrow(() -> new RuntimeException("Некорректное состояние БД"));
+		return apartmentRepository.findByVote(vote).orElseThrow(() -> new MyResourceNotFoundException("Некорректное состояние БД"));
 	}
 
 	@Override
@@ -111,7 +112,7 @@ public class ApartmentServiceImpl implements ApartmentService {
 	@Override
 	public void addOfferInVote(Vote vote, Offer offer) {
 		if (!vote.isOpened()) {
-			throw new RuntimeException("Голосование уже закончено!");
+			throw new MyResourceNotFoundException("Голосование уже закончено!");
 		}
 		var list = vote.getOfferList();
 		list.add(offer);
@@ -136,7 +137,7 @@ public class ApartmentServiceImpl implements ApartmentService {
 		offerService.save(offer);
 		Optional<Vote> voteOptional = voteService.findById(id);
 		if (voteOptional.isEmpty()) {
-			throw new RuntimeException("Ошибка в указанном ID голосования");
+			throw new MyResourceNotFoundException("Ошибка в указанном ID голосования");
 		}
 		Vote vote = voteOptional.get();
 		addOfferInVote(vote, offer);

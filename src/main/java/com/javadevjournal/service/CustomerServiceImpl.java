@@ -3,6 +3,7 @@ package com.javadevjournal.service;
 import com.javadevjournal.dto.CustomerDTO;
 import com.javadevjournal.jpa.entity.Customer;
 import com.javadevjournal.jpa.repository.CustomerRepository;
+import com.javadevjournal.security.MyResourceNotFoundException;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,14 +61,14 @@ public class CustomerServiceImpl implements CustomerService {
 	@Override
 	public Customer findById(Long id) {
 		Optional<Customer> customer = customerRepository.findById(id);
-		return customer.orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+		return customer.orElseThrow(() -> new MyResourceNotFoundException("Пользователь не найден"));
 	}
 
 	@Override
 	public Customer registration(CustomerDTO customerDTO) {
 		Customer customer = new Customer();
 		if (customerDTO.getName() == null || customerDTO.getPassword() == null) {
-			throw new RuntimeException("Вы ошиблись, отсутствует имя или пароль");
+			throw new MyResourceNotFoundException("Вы ошиблись, отсутствует имя или пароль");
 		}
 		customer.setUserName(customerDTO.getName());
 		customer.setPassword(customerDTO.getPassword());
@@ -91,7 +92,7 @@ public class CustomerServiceImpl implements CustomerService {
 	public void deleteMe(HttpServletRequest httpServletRequest) {
 		var customerOpt = whoIs(httpServletRequest);
 		if (customerOpt.isEmpty()) {
-			throw new RuntimeException("Хз как так вышло, вы не авторизованы");
+			throw new MyResourceNotFoundException("Хз как так вышло, вы не авторизованы");
 		}
 		var customer = customerOpt.get();
 		apartmentService.deleteAllByOwner(customer);
@@ -104,18 +105,18 @@ public class CustomerServiceImpl implements CustomerService {
 	public String complaint(HttpServletRequest httpServletRequest, Long customerId) {
 		var customerOpt = whoIs(httpServletRequest);
 		if (customerOpt.isEmpty()) {
-			throw new RuntimeException("Хз как так вышло, вы не авторизованы");
+			throw new MyResourceNotFoundException("Хз как так вышло, вы не авторизованы");
 		}
 		var customer = customerOpt.get();
 		if (customer.isBanned()) {
-			throw new RuntimeException("Пользователя на которого вы жалуетесь уже забанен");
+			throw new MyResourceNotFoundException("Пользователя на которого вы жалуетесь уже забанен");
 		}
 		Customer anotherUser = findById(customerId);
 		if (anotherUser == null) {
-			throw new RuntimeException("Пользователя на которого вы жалуетесь не существует");
+			throw new MyResourceNotFoundException("Пользователя на которого вы жалуетесь не существует");
 		}
 		if (anotherUser.isBanned()) {
-			throw new RuntimeException("Пользователя на которого вы жалуетесь уже забанен");
+			throw new MyResourceNotFoundException("Пользователя на которого вы жалуетесь уже забанен");
 		}
 		return complaint(anotherUser);
 	}

@@ -4,6 +4,7 @@ import com.javadevjournal.dto.ApartmentDTO;
 import com.javadevjournal.jpa.entity.Apartment;
 import com.javadevjournal.jpa.entity.Customer;
 import com.javadevjournal.jpa.entity.Vote;
+import com.javadevjournal.security.MyResourceNotFoundException;
 import com.javadevjournal.service.ApartmentService;
 import com.javadevjournal.service.CustomerService;
 import com.javadevjournal.service.VoteService;
@@ -63,11 +64,11 @@ public class UserProfileController {
     public List<Apartment> findMyApartments(HttpServletRequest httpServletRequest) {
         var customerOpt = customerService.whoIs(httpServletRequest);
         if (customerOpt.isEmpty()) {
-            throw new RuntimeException("Хз как так вышло, вы не авторизованы");
+            throw new MyResourceNotFoundException("Хз как так вышло, вы не авторизованы");
         }
         var customer = customerOpt.get();
         if (customer.isBanned()) {
-            throw new RuntimeException("Вы забанены, у вас не может быть объявлений");
+            throw new MyResourceNotFoundException("Вы забанены, у вас не может быть объявлений");
         }
         return apartmentService.findMyApartments(customer);
     }
@@ -88,11 +89,11 @@ public class UserProfileController {
                                      @RequestBody ApartmentDTO apartmentDTO) {
         var customerOpt = customerService.whoIs(httpServletRequest);
         if (customerOpt.isEmpty()) {
-            throw new RuntimeException("Хз как так вышло, вы не авторизованы");
+            throw new MyResourceNotFoundException("Хз как так вышло, вы не авторизованы");
         }
         var customer = customerOpt.get();
         if (customer.isBanned()) {
-            throw new RuntimeException("Вы забанены, вам нельзя выставлять квартиры на продажу");
+            throw new MyResourceNotFoundException("Вы забанены, вам нельзя выставлять квартиры на продажу");
         }
         return apartmentService.createApartment(apartmentDTO, customer);
     }
@@ -103,11 +104,11 @@ public class UserProfileController {
                               @RequestParam("price") final String price) {
         var customerOpt = customerService.whoIs(httpServletRequest);
         if (customerOpt.isEmpty()) {
-            throw new RuntimeException("Хз как так вышло, вы не авторизованы");
+            throw new MyResourceNotFoundException("Хз как так вышло, вы не авторизованы");
         }
         var customer = customerOpt.get();
         if (customer.isBanned()) {
-            throw new RuntimeException("Вы забанены, вам нельзя участвовать в голосовании");
+            throw new MyResourceNotFoundException("Вы забанены, вам нельзя участвовать в голосовании");
         }
         if (!customer.isProfessional()) {
             return "Вы не имеете права голосовать, вашего опыта еще не достаточно";
