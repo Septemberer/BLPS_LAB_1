@@ -9,6 +9,7 @@ import com.javadevjournal.service.ApartmentService;
 import com.javadevjournal.service.CustomerService;
 import com.javadevjournal.service.VoteService;
 import lombok.AllArgsConstructor;
+import lombok.var;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -63,7 +64,7 @@ public class UserProfileController {
     @GetMapping(value = "/apartments/my", produces = "application/json")
     public List<Apartment> findMyApartments(HttpServletRequest httpServletRequest) {
         var customerOpt = customerService.whoIs(httpServletRequest);
-        if (customerOpt.isEmpty()) {
+        if (!customerOpt.isPresent()) {
             throw new MyResourceNotFoundException("Хз как так вышло, вы не авторизованы");
         }
         var customer = customerOpt.get();
@@ -88,7 +89,7 @@ public class UserProfileController {
     public Apartment createApartment(HttpServletRequest httpServletRequest,
                                      @RequestBody ApartmentDTO apartmentDTO) {
         var customerOpt = customerService.whoIs(httpServletRequest);
-        if (customerOpt.isEmpty()) {
+        if (!customerOpt.isPresent()) {
             throw new MyResourceNotFoundException("Хз как так вышло, вы не авторизованы");
         }
         var customer = customerOpt.get();
@@ -103,7 +104,7 @@ public class UserProfileController {
                               @PathVariable Long id,
                               @RequestParam("price") final String price) {
         var customerOpt = customerService.whoIs(httpServletRequest);
-        if (customerOpt.isEmpty()) {
+        if (!customerOpt.isPresent()) {
             throw new MyResourceNotFoundException("Хз как так вышло, вы не авторизованы");
         }
         var customer = customerOpt.get();

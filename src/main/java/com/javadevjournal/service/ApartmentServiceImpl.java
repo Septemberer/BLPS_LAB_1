@@ -9,9 +9,11 @@ import com.javadevjournal.jpa.repository.ApartmentRepository;
 import com.javadevjournal.jpa.repository.CustomerRepository;
 import com.javadevjournal.security.MyResourceNotFoundException;
 import lombok.AllArgsConstructor;
+import lombok.var;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -53,6 +55,7 @@ public class ApartmentServiceImpl implements ApartmentService {
 	}
 
 	@Override
+	@Transactional
 	public Apartment createApartment(ApartmentDTO apartmentDTO, Customer customer) {
 		Apartment apartment = new Apartment();
 		apartment.setOwner(customer);
@@ -136,7 +139,7 @@ public class ApartmentServiceImpl implements ApartmentService {
 		offer.setPrice(price);
 		offerService.save(offer);
 		Optional<Vote> voteOptional = voteService.findById(id);
-		if (voteOptional.isEmpty()) {
+		if (!voteOptional.isPresent()) {
 			throw new MyResourceNotFoundException("Ошибка в указанном ID голосования");
 		}
 		Vote vote = voteOptional.get();

@@ -5,7 +5,7 @@ import com.javadevjournal.jpa.entity.Customer;
 import com.javadevjournal.jpa.repository.CustomerRepository;
 import com.javadevjournal.security.MyResourceNotFoundException;
 import lombok.AllArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
+import lombok.var;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.User;
@@ -13,9 +13,10 @@ import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
+import java.util.Base64;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
@@ -31,14 +32,16 @@ public class CustomerServiceImpl implements CustomerService {
 	public String login(String username, String password) {
 		Optional<Customer> customer = customerRepository.login(username, password);
 		if (customer.isPresent()) {
-			String token = UUID.randomUUID().toString();
+			Base64.Encoder encoder = Base64.getEncoder();
+			String token = new String(encoder.encode(username.getBytes())) +
+					":" + new String(encoder.encode(password.getBytes()));
 			Customer custom = customer.get();
 			custom.setToken(token);
 			customerRepository.save(custom);
 			return token;
 		}
 
-		return StringUtils.EMPTY;
+		return "";
 	}
 
 	@Override
@@ -81,9 +84,9 @@ public class CustomerServiceImpl implements CustomerService {
 
 	@Override
 	public Optional<Customer> whoIs(HttpServletRequest httpServletRequest) {
-		String token = StringUtils.isNotEmpty(httpServletRequest.getHeader(AUTHORIZATION)) ?
+		String token = !Objects.equals(httpServletRequest.getHeader(AUTHORIZATION), "") ?
 				httpServletRequest.getHeader(AUTHORIZATION) : "";
-		token = StringUtils.removeStart(token, "Bearer").trim();
+		token = token.replaceAll("Basic", "").trim();
 		return customerRepository.findByToken(token);
 	}
 
@@ -91,12 +94,12 @@ public class CustomerServiceImpl implements CustomerService {
 	@Transactional
 	public void deleteMe(HttpServletRequest httpServletRequest) {
 		var customerOpt = whoIs(httpServletRequest);
-		if (customerOpt.isEmpty()) {
+		if (!customerOpt.isPresent()) {
 			throw new MyResourceNotFoundException("Хз как так вышло, вы не авторизованы");
 		}
 		var customer = customerOpt.get();
 		apartmentService.deleteAllByOwner(customer);
-//		apartmentService.unApprove(customer);
+		apartmentService.unApprove(customer);
 		customerRepository.delete(customer);
 	}
 
@@ -104,7 +107,7 @@ public class CustomerServiceImpl implements CustomerService {
 	@Transactional
 	public String complaint(HttpServletRequest httpServletRequest, Long customerId) {
 		var customerOpt = whoIs(httpServletRequest);
-		if (customerOpt.isEmpty()) {
+		if (!customerOpt.isPresent()) {
 			throw new MyResourceNotFoundException("Хз как так вышло, вы не авторизованы");
 		}
 		var customer = customerOpt.get();

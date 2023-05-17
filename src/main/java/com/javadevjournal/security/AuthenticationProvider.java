@@ -15,24 +15,24 @@ import java.util.Optional;
 @Component
 public class AuthenticationProvider extends AbstractUserDetailsAuthenticationProvider {
 
-    private final CustomerService customerService;
+	private final CustomerService customerService;
 
-    @Override
-    protected void additionalAuthenticationChecks(UserDetails userDetails,
-                                                  UsernamePasswordAuthenticationToken authenticationToken)
-            throws AuthenticationException {
-    }
+	@Override
+	protected void additionalAuthenticationChecks(UserDetails userDetails,
+												  UsernamePasswordAuthenticationToken authenticationToken)
+			throws AuthenticationException {
+	}
 
-    @Override
-    protected UserDetails retrieveUser(String userName,
-                                       UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken)
-            throws AuthenticationException {
+	@Override
+	protected UserDetails retrieveUser(String userName,
+									   UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken)
+			throws AuthenticationException {
 
-        Object token = usernamePasswordAuthenticationToken.getCredentials();
-        return Optional
-                .ofNullable(token)
-                .map(String::valueOf)
-                .flatMap(customerService::findByToken)
-                .orElseThrow(() -> new UsernameNotFoundException("Cannot find user with authentication token=" + token));
-    }
+		Object token = usernamePasswordAuthenticationToken.getCredentials();
+		return Optional
+				.ofNullable(token)
+				.map(String::valueOf)
+				.flatMap(customerService::findByToken)
+				.orElseThrow(() -> new UsernameNotFoundException("Cannot find user with authentication token=" + token));
+	}
 }

@@ -63,11 +63,12 @@ public class Customer {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof Customer customer)) {
+        if (!(o instanceof Customer)) {
             return false;
         }
-        return Objects.equals(getUserName(), customer.getUserName())
-                && Objects.equals(getPassword(), customer.getPassword());
+        Customer customer = (Customer) o;
+        return Objects.equals(getUserName(), customer.getUserName()) &&
+                Objects.equals(getPassword(), customer.getPassword());
     }
 
     @Override
