@@ -3,6 +3,7 @@ package com.javadevjournal.controller;
 import com.javadevjournal.dto.ApartmentDTO;
 import com.javadevjournal.jpa.entity.Apartment;
 import com.javadevjournal.jpa.entity.Customer;
+import com.javadevjournal.jpa.entity.Offer;
 import com.javadevjournal.jpa.entity.Vote;
 import com.javadevjournal.security.MyResourceNotFoundException;
 import com.javadevjournal.service.ApartmentService;
@@ -10,6 +11,7 @@ import com.javadevjournal.service.CustomerService;
 import com.javadevjournal.service.VoteService;
 import lombok.AllArgsConstructor;
 import lombok.var;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -99,28 +101,25 @@ public class UserProfileController {
         return apartmentService.createApartment(apartmentDTO, customer);
     }
 
-    @PostMapping(value = "/apartment/vote/{id}")
-    public String createOffer(HttpServletRequest httpServletRequest,
-                              @PathVariable Long id,
-                              @RequestParam("price") final String price) {
-        var customerOpt = customerService.whoIs(httpServletRequest);
-        if (!customerOpt.isPresent()) {
-            throw new MyResourceNotFoundException("Хз как так вышло, вы не авторизованы");
-        }
-        var customer = customerOpt.get();
-        if (customer.isBanned()) {
-            throw new MyResourceNotFoundException("Вы забанены, вам нельзя участвовать в голосовании");
-        }
-        if (!customer.isProfessional()) {
-            return "Вы не имеете права голосовать, вашего опыта еще не достаточно";
-        }
-        apartmentService.makeOffer(id, customer, Long.valueOf(price));
-        return "Спасибо! Ваш голос учтен!";
-    }
-
     @GetMapping(value = "/apartment/vote/list")
     public List<Vote> getAllOpenedVotes() {
         return voteService.getAllOpenedVotes();
+    }
+
+    @Scheduled(fixedDelay = 10000)
+    private void getOpenedVotes() {
+        List<Vote> voteList = getAllOpenedVotes();
+        System.out.println("-----Opened Votes-----");
+        for (Vote vote : voteList) {
+            System.out.printf("---ID: %s\n", vote.getId());
+            System.out.printf("---Players: %s\n", vote.getOfferList().size());
+            System.out.println("---Names---");
+            int i = 1;
+            for (Offer offer : vote.getOfferList()) {
+                System.out.printf("%s. %s\n", i, offer.getCustomer().getUserName());
+            }
+            System.out.println("+_+_+_+_+_+_+_+_+_+_+");
+        }
     }
 
 }

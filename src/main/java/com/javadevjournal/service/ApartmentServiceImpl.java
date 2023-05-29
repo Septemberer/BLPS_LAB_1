@@ -133,6 +133,7 @@ public class ApartmentServiceImpl implements ApartmentService {
 	}
 
 	@Override
+	@Transactional
 	public void makeOffer(Long id, Customer customer, Long price) {
 		Offer offer = new Offer();
 		offer.setCustomer(customer);

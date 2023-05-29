@@ -91,6 +91,13 @@ public class CustomerServiceImpl implements CustomerService {
 	}
 
 	@Override
+	public Optional<Customer> whoIs(String userToken) {
+		String token = !Objects.equals(userToken, "") ? userToken : "";
+		token = token.replaceAll("Basic", "").trim();
+		return customerRepository.findByToken(token);
+	}
+
+	@Override
 	@Transactional
 	public void deleteMe(HttpServletRequest httpServletRequest) {
 		var customerOpt = whoIs(httpServletRequest);
