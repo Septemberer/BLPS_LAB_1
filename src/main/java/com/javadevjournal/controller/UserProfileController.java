@@ -111,12 +111,12 @@ public class UserProfileController {
         List<Vote> voteList = getAllOpenedVotes();
         System.out.println("-----Opened Votes-----");
         for (Vote vote : voteList) {
-            System.out.printf("---ID: %s\n", vote.getId());
-            System.out.printf("---Players: %s\n", vote.getOfferList().size());
-            System.out.println("---Names---");
+            System.out.printf("ID: %s\n", vote.getId());
+            System.out.printf("Players: %s\n", vote.getOfferList().size());
             int i = 1;
             for (Offer offer : vote.getOfferList()) {
-                System.out.printf("%s. %s\n", i, offer.getCustomer().getUserName());
+                System.out.printf("%s. %s : %s\n", i, offer.getCustomer().getUserName(), offer.getPrice());
+                i++;
             }
             System.out.println("+_+_+_+_+_+_+_+_+_+_+");
         }
