@@ -17,3 +17,4 @@
   - Каждые 10 секунд сервис выводит в консоль открытые голосования и их участников
 
 test YT integration
+#ApSer-2 test githubIntegration
