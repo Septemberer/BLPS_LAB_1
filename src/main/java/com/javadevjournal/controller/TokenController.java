@@ -27,7 +27,8 @@ public class TokenController {
 	}
 
 	@PostMapping("/token")
-	public String getToken(@RequestParam("username") final String username, @RequestParam("password") final String password) {
+	public String getToken(@RequestParam("username") final String username,
+						   @RequestParam("password") final String password) {
 		String token = customerService.login(username, password);
 		if (Objects.equals(token, "")) {
 			return NO_TOKEN_FOUND;
