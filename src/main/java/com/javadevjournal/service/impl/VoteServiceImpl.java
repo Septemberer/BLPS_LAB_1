@@ -1,9 +1,10 @@
-package com.javadevjournal.service;
+package com.javadevjournal.service.impl;
 
 import com.javadevjournal.jpa.entity.Apartment;
 import com.javadevjournal.jpa.entity.Offer;
 import com.javadevjournal.jpa.entity.Vote;
 import com.javadevjournal.jpa.repository.VoteRepository;
+import com.javadevjournal.service.repo.VoteService;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

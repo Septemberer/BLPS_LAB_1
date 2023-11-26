@@ -1,8 +1,9 @@
-package com.javadevjournal.service;
+package com.javadevjournal.service.impl;
 
 import com.javadevjournal.jpa.entity.Customer;
 import com.javadevjournal.jpa.entity.Offer;
 import com.javadevjournal.jpa.repository.OfferRepository;
+import com.javadevjournal.service.repo.OfferService;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

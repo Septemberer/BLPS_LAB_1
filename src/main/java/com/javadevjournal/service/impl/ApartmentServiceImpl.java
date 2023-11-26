@@ -1,4 +1,4 @@
-package com.javadevjournal.service;
+package com.javadevjournal.service.impl;
 
 import com.javadevjournal.dto.ApartmentDTO;
 import com.javadevjournal.jpa.entity.Apartment;
@@ -8,8 +8,10 @@ import com.javadevjournal.jpa.entity.Vote;
 import com.javadevjournal.jpa.repository.ApartmentRepository;
 import com.javadevjournal.jpa.repository.CustomerRepository;
 import com.javadevjournal.security.MyResourceNotFoundException;
+import com.javadevjournal.service.repo.ApartmentService;
+import com.javadevjournal.service.repo.OfferService;
+import com.javadevjournal.service.repo.VoteService;
 import lombok.AllArgsConstructor;
-import lombok.var;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -79,13 +81,13 @@ public class ApartmentServiceImpl implements ApartmentService {
 		for (Offer offer : offerList) {
 			List<Vote> voteList = voteService.findAllByOfferListContains(offer);
 			for (Vote vote : voteList) {
-				var list = vote.getOfferList();
+				List<Offer> list = vote.getOfferList();
 				vote.setOfferList(
 						list.stream().filter(x -> x.getCustomer() != customer).collect(Collectors.toList())
 				);
 				vote.setOpened(true);
 				voteService.save(vote);
-				var apartment = getApartmentByVote(vote);
+				Apartment apartment = getApartmentByVote(vote);
 				apartment.setApproved(false);
 				save(apartment);
 			}
@@ -117,7 +119,7 @@ public class ApartmentServiceImpl implements ApartmentService {
 		if (!vote.isOpened()) {
 			throw new MyResourceNotFoundException("Голосование уже закончено!");
 		}
-		var list = vote.getOfferList();
+		List<Offer> list = vote.getOfferList();
 		list.add(offer);
 		if (list.size() >= 5) {
 			Long price = 0L;

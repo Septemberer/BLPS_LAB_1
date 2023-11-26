@@ -1,11 +1,12 @@
-package com.javadevjournal.service;
+package com.javadevjournal.service.impl;
 
 import com.javadevjournal.dto.CustomerDTO;
 import com.javadevjournal.jpa.entity.Customer;
 import com.javadevjournal.jpa.repository.CustomerRepository;
 import com.javadevjournal.security.MyResourceNotFoundException;
+import com.javadevjournal.service.repo.ApartmentService;
+import com.javadevjournal.service.repo.CustomerService;
 import lombok.AllArgsConstructor;
-import lombok.var;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.User;
@@ -75,7 +76,7 @@ public class CustomerServiceImpl implements CustomerService {
 		}
 		customer.setUserName(customerDTO.getName());
 		customer.setPassword(customerDTO.getPassword());
-		var res = customerRepository.findByUserNameAndPassword(
+		Optional<Customer> res = customerRepository.findByUserNameAndPassword(
 				customerDTO.getName(),
 				customerDTO.getPassword()
 		);
@@ -100,11 +101,11 @@ public class CustomerServiceImpl implements CustomerService {
 	@Override
 	@Transactional
 	public void deleteMe(HttpServletRequest httpServletRequest) {
-		var customerOpt = whoIs(httpServletRequest);
+		Optional<Customer> customerOpt = whoIs(httpServletRequest);
 		if (!customerOpt.isPresent()) {
 			throw new MyResourceNotFoundException("Хз как так вышло, вы не авторизованы");
 		}
-		var customer = customerOpt.get();
+		Customer customer = customerOpt.get();
 		apartmentService.deleteAllByOwner(customer);
 		apartmentService.unApprove(customer);
 		customerRepository.delete(customer);
@@ -113,13 +114,13 @@ public class CustomerServiceImpl implements CustomerService {
 	@Override
 	@Transactional
 	public String complaint(HttpServletRequest httpServletRequest, Long customerId) {
-		var customerOpt = whoIs(httpServletRequest);
+		Optional<Customer> customerOpt = whoIs(httpServletRequest);
 		if (!customerOpt.isPresent()) {
 			throw new MyResourceNotFoundException("Хз как так вышло, вы не авторизованы");
 		}
-		var customer = customerOpt.get();
+		Customer customer = customerOpt.get();
 		if (customer.isBanned()) {
-			throw new MyResourceNotFoundException("Пользователя на которого вы жалуетесь уже забанен");
+			throw new MyResourceNotFoundException("Вы забанены");
 		}
 		Customer anotherUser = findById(customerId);
 		if (anotherUser == null) {

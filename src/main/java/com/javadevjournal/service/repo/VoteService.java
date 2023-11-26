@@ -1,4 +1,4 @@
-package com.javadevjournal.service;
+package com.javadevjournal.service.repo;
 
 import com.javadevjournal.jpa.entity.Apartment;
 import com.javadevjournal.jpa.entity.Offer;

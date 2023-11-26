@@ -6,11 +6,10 @@ import com.javadevjournal.jpa.entity.Customer;
 import com.javadevjournal.jpa.entity.Offer;
 import com.javadevjournal.jpa.entity.Vote;
 import com.javadevjournal.security.MyResourceNotFoundException;
-import com.javadevjournal.service.ApartmentService;
-import com.javadevjournal.service.CustomerService;
-import com.javadevjournal.service.VoteService;
+import com.javadevjournal.service.repo.ApartmentService;
+import com.javadevjournal.service.repo.CustomerService;
+import com.javadevjournal.service.repo.VoteService;
 import lombok.AllArgsConstructor;
-import lombok.var;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @AllArgsConstructor
@@ -65,11 +65,11 @@ public class UserProfileController {
 
     @GetMapping(value = "/apartments/my", produces = "application/json")
     public List<Apartment> findMyApartments(HttpServletRequest httpServletRequest) {
-        var customerOpt = customerService.whoIs(httpServletRequest);
+        Optional<Customer> customerOpt = customerService.whoIs(httpServletRequest);
         if (!customerOpt.isPresent()) {
             throw new MyResourceNotFoundException("Хз как так вышло, вы не авторизованы");
         }
-        var customer = customerOpt.get();
+        Customer customer = customerOpt.get();
         if (customer.isBanned()) {
             throw new MyResourceNotFoundException("Вы забанены, у вас не может быть объявлений");
         }
@@ -90,11 +90,11 @@ public class UserProfileController {
     @PostMapping(value = "/apartment/create", produces = "application/json")
     public Apartment createApartment(HttpServletRequest httpServletRequest,
                                      @RequestBody ApartmentDTO apartmentDTO) {
-        var customerOpt = customerService.whoIs(httpServletRequest);
+        Optional<Customer> customerOpt = customerService.whoIs(httpServletRequest);
         if (!customerOpt.isPresent()) {
             throw new MyResourceNotFoundException("Хз как так вышло, вы не авторизованы");
         }
-        var customer = customerOpt.get();
+        Customer customer = customerOpt.get();
         if (customer.isBanned()) {
             throw new MyResourceNotFoundException("Вы забанены, вам нельзя выставлять квартиры на продажу");
         }

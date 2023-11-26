@@ -1,6 +1,6 @@
 package com.javadevjournal.controller;
 
-import com.javadevjournal.service.CustomerService;
+import com.javadevjournal.service.repo.CustomerService;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

@@ -1,17 +1,21 @@
-package com.javadevjournal.service;
+package com.javadevjournal.service.async;
 
 import com.javadevjournal.dto.VoteDTO;
+import com.javadevjournal.jpa.entity.Customer;
 import com.javadevjournal.security.MyResourceNotFoundException;
+import com.javadevjournal.service.repo.ApartmentService;
+import com.javadevjournal.service.repo.CustomerService;
 import lombok.AllArgsConstructor;
-import lombok.var;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @AllArgsConstructor
-public class DemoStringConsumer {
+public class VotingConsumer {
 
-	private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(DemoStringConsumer.class);
+	private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(VotingConsumer.class);
 	private final ApartmentService apartmentService;
 	private final CustomerService customerService;
 
@@ -19,12 +23,12 @@ public class DemoStringConsumer {
 	public void makeVote(String message) {
 		log.info("Received: " + message);
 		VoteDTO voteDTO = mapMessage(message);
-		var customerOpt = customerService.whoIs(voteDTO.getToken());
+		Optional<Customer> customerOpt = customerService.whoIs(voteDTO.getToken());
 		if (!customerOpt.isPresent()) {
 			log.info("Вы не авторизованы");
 			throw new MyResourceNotFoundException("Вы не авторизованы");
 		}
-		var customer = customerOpt.get();
+		Customer customer = customerOpt.get();
 		if (customer.isBanned()) {
 			log.info("Вы забанены, вам нельзя участвовать в голосовании");
 			throw new MyResourceNotFoundException("Вы забанены, вам нельзя участвовать в голосовании");
