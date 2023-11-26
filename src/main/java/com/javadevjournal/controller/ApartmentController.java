@@ -16,13 +16,15 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 @RequestMapping("/api/apartments")
 public class ApartmentController {
 
+	public static final String BASIC = "Basic";
+	public static final String REPLACEMENT = "";
 	private final CustomerService customerService;
 
 	@GetMapping(value = "/whoIs")
 	public String whoIs(HttpServletRequest httpServletRequest) {
-		String token = !Objects.equals(httpServletRequest.getHeader(AUTHORIZATION), "") ?
-				httpServletRequest.getHeader(AUTHORIZATION) : "";
-		token = token.replaceAll("Basic", "").trim();
+		String token = !Objects.equals(httpServletRequest.getHeader(AUTHORIZATION), REPLACEMENT) ?
+				httpServletRequest.getHeader(AUTHORIZATION) : REPLACEMENT;
+		token = token.replaceAll(BASIC, REPLACEMENT).trim();
 		String name = customerService.findByToken(token).get().getUsername();
 		return String.format("Здесь был : %s", name);
 	}

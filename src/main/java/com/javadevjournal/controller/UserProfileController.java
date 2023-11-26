@@ -29,6 +29,10 @@ import java.util.Optional;
 @RequestMapping("/api")
 public class UserProfileController {
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(UserProfileController.class);
+    public static final String DELETE_SUCCESS = "Вы и ваши квартиры успешно удалены из системы";
+    public static final String PERMISSION_DENIED = "Хз как так вышло, вы не авторизованы";
+    public static final String BANNED = "Вы забанены, у вас не может быть объявлений";
     private final CustomerService customerService;
     private final ApartmentService apartmentService;
     private final VoteService voteService;
@@ -41,7 +45,7 @@ public class UserProfileController {
     @DeleteMapping(value = "/users/delete/me")
     public String deleteMe(HttpServletRequest httpServletRequest) {
         customerService.deleteMe(httpServletRequest);
-        return "Вы и ваши квартиры успешно удалены из системы";
+        return DELETE_SUCCESS;
     }
 
     @GetMapping(value = "/users/user/all", produces = "application/json")
@@ -65,15 +69,7 @@ public class UserProfileController {
 
     @GetMapping(value = "/apartments/my", produces = "application/json")
     public List<Apartment> findMyApartments(HttpServletRequest httpServletRequest) {
-        Optional<Customer> customerOpt = customerService.whoIs(httpServletRequest);
-        if (!customerOpt.isPresent()) {
-            throw new MyResourceNotFoundException("Хз как так вышло, вы не авторизованы");
-        }
-        Customer customer = customerOpt.get();
-        if (customer.isBanned()) {
-            throw new MyResourceNotFoundException("Вы забанены, у вас не может быть объявлений");
-        }
-        return apartmentService.findMyApartments(customer);
+        return apartmentService.findMyApartments(customerCheck(httpServletRequest));
     }
 
     @GetMapping(value = "/apartments/all", produces = "application/json")
@@ -90,15 +86,19 @@ public class UserProfileController {
     @PostMapping(value = "/apartment/create", produces = "application/json")
     public Apartment createApartment(HttpServletRequest httpServletRequest,
                                      @RequestBody ApartmentDTO apartmentDTO) {
+        return apartmentService.createApartment(apartmentDTO, customerCheck(httpServletRequest));
+    }
+
+    private Customer customerCheck(HttpServletRequest httpServletRequest) {
         Optional<Customer> customerOpt = customerService.whoIs(httpServletRequest);
         if (!customerOpt.isPresent()) {
-            throw new MyResourceNotFoundException("Хз как так вышло, вы не авторизованы");
+            throw new MyResourceNotFoundException(PERMISSION_DENIED);
         }
         Customer customer = customerOpt.get();
         if (customer.isBanned()) {
-            throw new MyResourceNotFoundException("Вы забанены, вам нельзя выставлять квартиры на продажу");
+            throw new MyResourceNotFoundException(BANNED);
         }
-        return apartmentService.createApartment(apartmentDTO, customer);
+        return customer;
     }
 
     @GetMapping(value = "/apartment/vote/list")
@@ -109,16 +109,16 @@ public class UserProfileController {
     @Scheduled(fixedDelay = 10000)
     private void getOpenedVotes() {
         List<Vote> voteList = getAllOpenedVotes();
-        System.out.println("-----Opened Votes-----");
+        log.info("-----Opened Votes-----");
         for (Vote vote : voteList) {
-            System.out.printf("ID: %s\n", vote.getId());
-            System.out.printf("Players: %s\n", vote.getOfferList().size());
+            log.info("ID: {}\n", vote.getId());
+            log.info("Players: {}\n", vote.getOfferList().size());
             int i = 1;
             for (Offer offer : vote.getOfferList()) {
-                System.out.printf("%s. %s : %s\n", i, offer.getCustomer().getUserName(), offer.getPrice());
+                log.info("{}. {} : {}\n", i, offer.getCustomer().getUserName(), offer.getPrice());
                 i++;
             }
-            System.out.println("+_+_+_+_+_+_+_+_+_+_+");
+            log.info("+_+_+_+_+_+_+_+_+_+_+");
         }
     }
 

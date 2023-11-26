@@ -17,18 +17,20 @@ import java.util.Objects;
 @AllArgsConstructor
 public class TokenController {
 
+	public static final String NO_TOKEN_FOUND = "no token found";
+	public static final String HELLO_WORLD = "Hello world!!!";
 	private final CustomerService customerService;
 
 	@GetMapping("/")
 	public String hello() {
-		return "Hello world!!!";
+		return HELLO_WORLD;
 	}
 
 	@PostMapping("/token")
 	public String getToken(@RequestParam("username") final String username, @RequestParam("password") final String password) {
 		String token = customerService.login(username, password);
 		if (Objects.equals(token, "")) {
-			return "no token found";
+			return NO_TOKEN_FOUND;
 		}
 		return token;
 	}
